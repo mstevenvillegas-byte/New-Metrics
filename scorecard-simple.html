@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS Scorecard — May 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f7f6f2;
+    font-family: 'DM Sans', sans-serif;
+    color: #1a1a1a;
+    padding: 48px 32px;
+  }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* HEADER */
+  .header {
+    margin-bottom: 48px;
+  }
+
+  .header .label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #999;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+    font-weight: 500;
+    color: #1a1a1a;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+
+  .header .sub {
+    font-size: 13px;
+    color: #999;
+    font-weight: 300;
+  }
+
+  /* SCORE TIERS */
+  .tiers {
+    display: flex;
+    gap: 0;
+    margin-bottom: 48px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .tier {
+    flex: 1;
+    padding: 14px 16px;
+    border-right: 1px solid #ddd;
+    text-align: center;
+  }
+
+  .tier:last-child { border-right: none; }
+
+  .tier .t-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+
+  .tier .t-label {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+  }
+
+  .tier.needs .t-score { color: #d04a2b; }
+  .tier.good .t-score { color: #1a1a1a; }
+  .tier.standing .t-score { color: #2563b0; }
+  .tier.excellent .t-score { color: #1a7a4a; }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #bbb;
+    font-weight: 500;
+    margin-bottom: 16px;
+    margin-top: 36px;
+  }
+
+  /* TRAIN MAP ROW */
+  .metric-row {
+    display: flex;
+    align-items: stretch;
+    margin-bottom: 2px;
+    gap: 0;
+    min-height: 52px;
+  }
+
+  /* LINE COLUMN */
+  .line-col {
+    width: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .line-track {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    top: 0;
+    bottom: 0;
+  }
+
+  .metric-row:first-child .line-track { top: 50%; }
+  .metric-row:last-child .line-track { bottom: 50%; }
+
+  .line-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2.5px solid #fff;
+    position: relative;
+    z-index: 2;
+    margin-top: 19px;
+    flex-shrink: 0;
+  }
+
+  /* METRIC BODY */
+  .metric-body {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    margin: 2px 0;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .metric-body:hover { border-color: #bbb; }
+
+  .metric-left {
+    flex: 1;
+  }
+
+  .metric-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+  }
+
+  .metric-target {
+    font-size: 12px;
+    color: #999;
+    font-weight: 300;
+  }
+
+  .metric-target strong {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: #555;
+  }
+
+  .metric-pts {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: #1a1a1a;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .metric-pts .pts-unit {
+    font-size: 11px;
+    color: #bbb;
+    font-weight: 400;
+  }
+
+  /* BREAKDOWN */
+  .breakdown {
+    display: none;
+    border-top: 1px solid #f0f0f0;
+    padding: 12px 16px 4px;
+    margin: 0 2px;
+    background: #fff;
+    border-radius: 0 0 8px 8px;
+    border: 1px solid #e8e8e8;
+    border-top: none;
+    margin-top: -6px;
+    margin-bottom: 2px;
+  }
+
+  .breakdown.open { display: block; }
+
+  .bk-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #f5f5f5;
+    font-size: 12px;
+  }
+
+  .bk-row:last-child { border-bottom: none; }
+
+  .bk-range { color: #999; font-weight: 300; }
+
+  .bk-pts {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .bk-tag {
+    font-size: 9px;
+    background: #f0f7f4;
+    color: #1a7a4a;
+    border-radius: 3px;
+    padding: 2px 5px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-left: 6px;
+  }
+
+  .bk-row.target-row .bk-range { color: #1a1a1a; font-weight: 500; }
+
+  /* PASS/FAIL */
+  .pf-row {
+    display: flex;
+    gap: 8px;
+    padding: 8px 0;
+  }
+
+  .pf-item {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+
+  .pf-item.pass { background: #f0f7f4; color: #1a7a4a; }
+  .pf-item.fail { background: #fef2f0; color: #c0392b; }
+
+  .pf-item .pf-pts {
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+
+  /* TOTAL BAR */
+  .total-bar {
+    margin-top: 32px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+  }
+
+  .total-bar .t-label {
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  .total-bar .t-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 32px;
+    font-weight: 500;
+  }
+
+  .total-bar .t-note {
+    font-size: 12px;
+    color: #888;
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  /* NOTE */
+  .note {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #aaa;
+    line-height: 1.7;
+    padding: 0 4px;
+  }
+
+  .note strong { color: #888; font-weight: 500; }
+
+  /* ARROW */
+  .chevron {
+    font-size: 10px;
+    color: #ccc;
+    margin-left: 8px;
+    transition: transform 0.15s;
+    flex-shrink: 0;
+  }
+
+  .chevron.open { transform: rotate(180deg); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="label">CS Team · May 2026</div>
+    <h1>Performance Scorecard</h1>
+    <div class="sub">Updated metrics & point system</div>
+  </div>
+
+  <!-- TIERS -->
+  <div class="tiers">
+    <div class="tier needs">
+      <div class="t-score">&lt; 85</div>
+      <div class="t-label">Needs improvement</div>
+    </div>
+    <div class="tier good">
+      <div class="t-score">85 – 89</div>
+      <div class="t-label">Passing</div>
+    </div>
+    <div class="tier standing">
+      <div class="t-score">90 – 94</div>
+      <div class="t-label">Good standing</div>
+    </div>
+    <div class="tier excellent">
+      <div class="t-score">95+</div>
+      <div class="t-label">Excellent</div>
+    </div>
+  </div>
+
+  <!-- QUALITY -->
+  <div class="section-label">Quality — 60 pts</div>
+
+  <!-- CSAT -->
+  <div class="metric-row" id="row-csat">
+    <div class="line-col">
+      <div class="line-track" style="background:#2d8f5e;"></div>
+      <div class="line-dot" style="background:#2d8f5e;"></div>
+    </div>
+    <div class="metric-body" onclick="toggle('csat')">
+      <div class="metric-left">
+        <div class="metric-name">CSAT</div>
+        <div class="metric-target">Target <strong>≥ 4.5</strong></div>
+      </div>
+      <div class="metric-pts">30 <span class="pts-unit">pts</span></div>
+      <span class="chevron" id="chev-csat">▾</span>
+    </div>
+  </div>
+  <div class="breakdown" id="bk-csat">
+    <div class="bk-row"><span class="bk-range">5.0</span><span class="bk-pts">30</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 4.8</span><span class="bk-pts">29</span></div>
+    <div class="bk-row target-row"><span class="bk-range">≥ 4.5 <span class="bk-tag">target</span></span><span class="bk-pts">28</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 4.4</span><span class="bk-pts">27</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 4.3</span><span class="bk-pts">24</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 4.0</span><span class="bk-pts">20</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 3.8</span><span class="bk-pts">15</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 3.0</span><span class="bk-pts">5</span></div>
+    <div class="bk-row"><span class="bk-range">&lt; 3.0</span><span class="bk-pts" style="color:#d04a2b">0</span></div>
+  </div>
+
+  <!-- QA -->
+  <div class="metric-row" id="row-qa">
+    <div class="line-col">
+      <div class="line-track" style="background:#2d8f5e;"></div>
+      <div class="line-dot" style="background:#2d8f5e;"></div>
+    </div>
+    <div class="metric-body" onclick="toggle('qa')">
+      <div class="metric-left">
+        <div class="metric-name">QA Score</div>
+        <div class="metric-target">Target <strong>≥ 40 / 50</strong> &nbsp;·&nbsp; 3 tickets reviewed / week</div>
+      </div>
+      <div class="metric-pts">30 <span class="pts-unit">pts</span></div>
+      <span class="chevron" id="chev-qa">▾</span>
+    </div>
+  </div>
+  <div class="breakdown" id="bk-qa">
+    <div class="bk-row"><span class="bk-range">50</span><span class="bk-pts">30</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 47</span><span class="bk-pts">29</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 43</span><span class="bk-pts">27</span></div>
+    <div class="bk-row target-row"><span class="bk-range">≥ 40 <span class="bk-tag">target</span></span><span class="bk-pts">25</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 35</span><span class="bk-pts" style="color:#d04a2b">16</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 30</span><span class="bk-pts" style="color:#d04a2b">9</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 25</span><span class="bk-pts" style="color:#d04a2b">5</span></div>
+    <div class="bk-row"><span class="bk-range">&lt; 25</span><span class="bk-pts" style="color:#d04a2b">0</span></div>
+  </div>
+
+  <!-- ATTENDANCE -->
+  <div class="section-label">Attendance — 10 pts</div>
+
+  <div class="metric-row" id="row-ha">
+    <div class="line-col">
+      <div class="line-track" style="background:#7b5ea7;"></div>
+      <div class="line-dot" style="background:#7b5ea7;"></div>
+    </div>
+    <div class="metric-body" onclick="toggle('ha')">
+      <div class="metric-left">
+        <div class="metric-name">Hubstaff Activity</div>
+        <div class="metric-target">Target <strong>≥ 75%</strong></div>
+      </div>
+      <div class="metric-pts">10 <span class="pts-unit">pts</span></div>
+      <span class="chevron" id="chev-ha">▾</span>
+    </div>
+  </div>
+  <div class="breakdown" id="bk-ha">
+    <div class="bk-row target-row"><span class="bk-range">≥ 75% <span class="bk-tag">target</span></span><span class="bk-pts">10</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 70%</span><span class="bk-pts">9</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 67%</span><span class="bk-pts">8</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 65%</span><span class="bk-pts">7</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 60%</span><span class="bk-pts">6</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 50%</span><span class="bk-pts">5</span></div>
+    <div class="bk-row"><span class="bk-range">&lt; 50%</span><span class="bk-pts" style="color:#d04a2b">0</span></div>
+  </div>
+
+  <!-- VOLUME -->
+  <div class="section-label">Volume — 15 pts</div>
+
+  <!-- TICKETS -->
+  <div class="metric-row" id="row-tck">
+    <div class="line-col">
+      <div class="line-track" style="background:#c88b2a;"></div>
+      <div class="line-dot" style="background:#c88b2a;"></div>
+    </div>
+    <div class="metric-body" onclick="toggle('tck')">
+      <div class="metric-left">
+        <div class="metric-name">Tickets</div>
+        <div class="metric-target">Target <strong>≥ 150 / week</strong></div>
+      </div>
+      <div class="metric-pts">10 <span class="pts-unit">pts</span></div>
+      <span class="chevron" id="chev-tck">▾</span>
+    </div>
+  </div>
+  <div class="breakdown" id="bk-tck">
+    <div class="bk-row target-row"><span class="bk-range">≥ 150 <span class="bk-tag">target</span></span><span class="bk-pts">10</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 120</span><span class="bk-pts">8</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 100</span><span class="bk-pts">6</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 80</span><span class="bk-pts">4</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 60</span><span class="bk-pts">2</span></div>
+    <div class="bk-row"><span class="bk-range">&lt; 60</span><span class="bk-pts" style="color:#d04a2b">0</span></div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="metric-row" id="row-msg">
+    <div class="line-col">
+      <div class="line-track" style="background:#c88b2a;"></div>
+      <div class="line-dot" style="background:#c88b2a;"></div>
+    </div>
+    <div class="metric-body" onclick="toggle('msg')">
+      <div class="metric-left">
+        <div class="metric-name">Messages</div>
+        <div class="metric-target">Target <strong>≥ 300 / week</strong></div>
+      </div>
+      <div class="metric-pts">5 <span class="pts-unit">pts</span></div>
+      <span class="chevron" id="chev-msg">▾</span>
+    </div>
+  </div>
+  <div class="breakdown" id="bk-msg">
+    <div class="bk-row target-row"><span class="bk-range">≥ 300 <span class="bk-tag">target</span></span><span class="bk-pts">5</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 250</span><span class="bk-pts">4</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 200</span><span class="bk-pts">3</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 150</span><span class="bk-pts">2</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 100</span><span class="bk-pts">1</span></div>
+    <div class="bk-row"><span class="bk-range">&lt; 100</span><span class="bk-pts" style="color:#d04a2b">0</span></div>
+  </div>
+
+  <!-- EFFICIENCY -->
+  <div class="section-label">Efficiency — 13 pts</div>
+
+  <!-- TKT/HR -->
+  <div class="metric-row" id="row-tkhr">
+    <div class="line-col">
+      <div class="line-track" style="background:#2563b0;"></div>
+      <div class="line-dot" style="background:#2563b0;"></div>
+    </div>
+    <div class="metric-body" onclick="toggle('tkhr')">
+      <div class="metric-left">
+        <div class="metric-name">Tickets / Hr</div>
+        <div class="metric-target">Target <strong>≥ 7.0</strong></div>
+      </div>
+      <div class="metric-pts">10 <span class="pts-unit">pts</span></div>
+      <span class="chevron" id="chev-tkhr">▾</span>
+    </div>
+  </div>
+  <div class="breakdown" id="bk-tkhr">
+    <div class="bk-row target-row"><span class="bk-range">≥ 7.0 <span class="bk-tag">target</span></span><span class="bk-pts">10</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 6.0</span><span class="bk-pts">8</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 5.0</span><span class="bk-pts">7</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 4.0</span><span class="bk-pts">5</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 3.0</span><span class="bk-pts">2</span></div>
+    <div class="bk-row"><span class="bk-range">&lt; 3.0</span><span class="bk-pts" style="color:#d04a2b">0</span></div>
+  </div>
+
+  <!-- MSG/HR -->
+  <div class="metric-row" id="row-mhr">
+    <div class="line-col">
+      <div class="line-track" style="background:#2563b0;"></div>
+      <div class="line-dot" style="background:#2563b0;"></div>
+    </div>
+    <div class="metric-body" onclick="toggle('mhr')">
+      <div class="metric-left">
+        <div class="metric-name">Messages / Hr</div>
+        <div class="metric-target">Target <strong>≥ 14.0</strong></div>
+      </div>
+      <div class="metric-pts">3 <span class="pts-unit">pts</span></div>
+      <span class="chevron" id="chev-mhr">▾</span>
+    </div>
+  </div>
+  <div class="breakdown" id="bk-mhr">
+    <div class="bk-row target-row"><span class="bk-range">≥ 14.0 <span class="bk-tag">target</span></span><span class="bk-pts">3</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 12.0</span><span class="bk-pts">2</span></div>
+    <div class="bk-row"><span class="bk-range">≥ 10.0</span><span class="bk-pts">1</span></div>
+    <div class="bk-row"><span class="bk-range">&lt; 10.0</span><span class="bk-pts" style="color:#d04a2b">0</span></div>
+  </div>
+
+  <!-- SPEED -->
+  <div class="section-label">Speed — 2 pts</div>
+
+  <!-- FRT -->
+  <div class="metric-row" id="row-frt">
+    <div class="line-col">
+      <div class="line-track" style="background:#999;"></div>
+      <div class="line-dot" style="background:#999;"></div>
+    </div>
+    <div class="metric-body" onclick="toggle('frt')">
+      <div class="metric-left">
+        <div class="metric-name">First Response Time</div>
+        <div class="metric-target">Pass / fail &nbsp;·&nbsp; threshold <strong>≤ 30 min</strong></div>
+      </div>
+      <div class="metric-pts">1 <span class="pts-unit">pt</span></div>
+      <span class="chevron" id="chev-frt">▾</span>
+    </div>
+  </div>
+  <div class="breakdown" id="bk-frt">
+    <div class="pf-row">
+      <div class="pf-item pass"><span>≤ 30 min</span><span class="pf-pts">1 pt</span></div>
+      <div class="pf-item fail"><span>&gt; 30 min</span><span class="pf-pts">0 pts</span></div>
+    </div>
+  </div>
+
+  <!-- ART -->
+  <div class="metric-row" id="row-art">
+    <div class="line-col">
+      <div class="line-track" style="background:#999;"></div>
+      <div class="line-dot" style="background:#999;"></div>
+    </div>
+    <div class="metric-body" onclick="toggle('art')">
+      <div class="metric-left">
+        <div class="metric-name">Average Response Time</div>
+        <div class="metric-target">Pass / fail &nbsp;·&nbsp; threshold <strong>≤ 30 min</strong></div>
+      </div>
+      <div class="metric-pts">1 <span class="pts-unit">pt</span></div>
+      <span class="chevron" id="chev-art">▾</span>
+    </div>
+  </div>
+  <div class="breakdown" id="bk-art">
+    <div class="pf-row">
+      <div class="pf-item pass"><span>≤ 30 min</span><span class="pf-pts">1 pt</span></div>
+      <div class="pf-item fail"><span>&gt; 30 min</span><span class="pf-pts">0 pts</span></div>
+    </div>
+  </div>
+
+  <!-- TOTAL -->
+  <div class="total-bar">
+    <div>
+      <div class="t-label">Total</div>
+      <div class="t-num">100 pts</div>
+    </div>
+    <div class="t-note">
+      Passing score &nbsp;<strong style="color:#fff">≥ 85</strong><br>
+      Tap any metric to see breakdown
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Note:</strong> On weeks with low ticket volume, individual targets for Tickets and Messages may be prorated. Any adjustment will be announced at the start of the week.
+  </div>
+
+</div>
+
+<script>
+  function toggle(id) {
+    const bk = document.getElementById('bk-' + id);
+    const chev = document.getElementById('chev-' + id);
+    bk.classList.toggle('open');
+    chev.classList.toggle('open');
+  }
+</script>
+</body>
+</html>
